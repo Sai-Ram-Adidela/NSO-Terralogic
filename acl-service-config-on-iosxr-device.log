@@ -1,0 +1,266 @@
+ 
+
+admin connected from 127.0.0.1 using ssh on terralogic
+[?7h
+ set paginate false
+[ok][2020-03-16 12:30:30]
+
+ request packages reload
+reload-result {
+    package acl_lab
+    result true
+}
+reload-result {
+    package cisco-iosxr-cli-3.5
+    result true
+}
+[ok][2020-03-16 12:30:31]
+
+ configure
+Entering configuration mode private
+Current configuration users:
+admin http (webui from 127.0.0.1) on since 2020-03-16 12:26:02 private mode
+[ok][2020-03-16 12:30:31]
+
+[edit]
+
+ run show users
+SID USER  CTX   FROM      PROTO LOGIN    CONFIG MODE
+*75 admin cli   127.0.0.1 ssh   12:30:30 private    
+ 69 admin webui 127.0.0.1 http  12:26:02 private    
+ 68 admin cli   127.0.0.1 ssh   12:17:47            
+[ok][2020-03-16 12:30:32]
+
+[edit]
+
+ run show services acl_lab
+% No entries found.
+[ok][2020-03-16 12:30:32]
+
+[edit]
+
+ set services acl_lab ingress devices iosxr0 interfaces GigabitEthernet 0/0/0/0
+[ok][2020-03-16 12:30:32]
+
+[edit]
+
+ commit dry-run outformat xml
+result-xml {
+    local-node {
+        data <devices xmlns="http://tail-f.com/ns/ncs">
+               <device>
+                 <name>iosxr0</name>
+                 <config>
+                   <interface xmlns="http://tail-f.com/ned/cisco-ios-xr">
+                     <GigabitEthernet>
+                       <id>0/0/0/0</id>
+                       <ipv4>
+                         <access-group>
+                           <direction>ingress</direction>
+                         </access-group>
+                       </ipv4>
+                     </GigabitEthernet>
+                   </interface>
+                 </config>
+               </device>
+             </devices>
+             <services xmlns="http://tail-f.com/ns/ncs">
+               <acl_lab xmlns="http://com/example/acl_lab">
+                 <ACL_Direction>ingress</ACL_Direction>
+                 <devices>
+                   <device_name>iosxr0</device_name>
+                   <interfaces>
+                     <interface_type>GigabitEthernet</interface_type>
+                     <interface_number>0/0/0/0</interface_number>
+                   </interfaces>
+                 </devices>
+               </acl_lab>
+             </services>
+    }
+}
+[ok][2020-03-16 12:30:33]
+
+[edit]
+
+ commit
+Commit complete.
+[ok][2020-03-16 12:30:34]
+
+[edit]
+
+ run show configuration devices device iosxr0 config interfaces interface GigabitEthernet 0/0/0/0
+---------------------------------------------------------------^
+syntax error: unknown argument
+[error][2020-03-16 12:30:34]
+
+[edit]
+
+ run show configuration devices device iosxr0 | display json
+{
+  "data": {
+    "tailf-ncs:devices": {
+      "device": [
+        {
+          "name": "iosxr0",
+          "address": "127.0.0.1",
+          "port": 10022,
+          "ssh": {
+            "host-key": [
+              {
+                "algorithm": "ssh-rsa",
+                "key-data": "AAAAB3NzaC1yc2EAAAADAQABAAABAQCjqWhtJn4oMiwj/S98vXvMrKmsT0i5oDMzbD53y6ZY\n4mKXR/9nsbqNY7dEzzI+y5KLHF0iaSa5SWyfIMdPnCnal8Obk36yZDxs+QWdszuP8mJi2Jlh\n3mgXB0l6xjtgvIGbUzCEzBhbQ6v7GK7Y0Vu2a+xlL4Fsc/qqdb7fDvdpjEBoK3XLnlalBvWO\n4FE3RRBRMZb0vlH8TXCd7HZWGBFCRAty/7m38yquGC7wpdpbTv/KNIxqhMZakxzZeOnm9/J5\ndkNsYMLB9cog8kN9VHRGcle7Sq0d9xFJSDRIrVujAV/4Nl8uxDqIIdhqJml49YiZvum12u4J\n66ShehEsgf8b"
+              }
+            ]
+          },
+          "authgroup": "default",
+          "device-type": {
+            "cli": {
+              "ned-id": "cisco-iosxr-cli-3.5:cisco-iosxr-cli-3.5"
+            }
+          },
+          "state": {
+            "admin-state": "unlocked"
+          },
+          "config": {
+            "tailf-ned-cisco-ios-xr:interface": {
+              "GigabitEthernet": [
+                {
+                  "id": "0/0/0/0",
+                  "ipv4": {
+                    "access-group": [
+                      {
+                        "direction": "ingress"
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            "tailf-ned-cisco-ios-xr:xxyyzztop": 0
+          }
+        }
+      ]
+    }
+  }
+}
+[ok][2020-03-16 12:30:35]
+
+[edit]
+
+ set services acl_lab ingress devices iosxr1 interfaces GigabitEthernet 0/0/0/0
+[ok][2020-03-16 12:30:35]
+
+[edit]
+
+ commit dry-run outformat xml
+result-xml {
+    local-node {
+        data <devices xmlns="http://tail-f.com/ns/ncs">
+               <device>
+                 <name>iosxr1</name>
+                 <config>
+                   <interface xmlns="http://tail-f.com/ned/cisco-ios-xr">
+                     <GigabitEthernet>
+                       <id>0/0/0/0</id>
+                       <ipv4>
+                         <access-group>
+                           <direction>ingress</direction>
+                         </access-group>
+                       </ipv4>
+                     </GigabitEthernet>
+                   </interface>
+                 </config>
+               </device>
+             </devices>
+             <services xmlns="http://tail-f.com/ns/ncs">
+               <acl_lab xmlns="http://com/example/acl_lab">
+                 <ACL_Direction>ingress</ACL_Direction>
+                 <devices>
+                   <device_name>iosxr1</device_name>
+                   <interfaces>
+                     <interface_type>GigabitEthernet</interface_type>
+                     <interface_number>0/0/0/0</interface_number>
+                   </interfaces>
+                 </devices>
+               </acl_lab>
+             </services>
+    }
+}
+[ok][2020-03-16 12:30:35]
+
+[edit]
+
+ commit
+Commit complete.
+[ok][2020-03-16 12:30:36]
+
+[edit]
+
+ run show configuration devices device iosxr1 config interfaces interface GigabitEthernet 0/0/0/0
+---------------------------------------------------------------^
+syntax error: unknown argument
+[error][2020-03-16 12:30:37]
+
+[edit]
+
+ run show configuration devices device iosxr1 | display json
+{
+  "data": {
+    "tailf-ncs:devices": {
+      "device": [
+        {
+          "name": "iosxr1",
+          "address": "127.0.0.1",
+          "port": 10023,
+          "ssh": {
+            "host-key": [
+              {
+                "algorithm": "ssh-rsa",
+                "key-data": "AAAAB3NzaC1yc2EAAAADAQABAAABAQCjqWhtJn4oMiwj/S98vXvMrKmsT0i5oDMzbD53y6ZY\n4mKXR/9nsbqNY7dEzzI+y5KLHF0iaSa5SWyfIMdPnCnal8Obk36yZDxs+QWdszuP8mJi2Jlh\n3mgXB0l6xjtgvIGbUzCEzBhbQ6v7GK7Y0Vu2a+xlL4Fsc/qqdb7fDvdpjEBoK3XLnlalBvWO\n4FE3RRBRMZb0vlH8TXCd7HZWGBFCRAty/7m38yquGC7wpdpbTv/KNIxqhMZakxzZeOnm9/J5\ndkNsYMLB9cog8kN9VHRGcle7Sq0d9xFJSDRIrVujAV/4Nl8uxDqIIdhqJml49YiZvum12u4J\n66ShehEsgf8b"
+              }
+            ]
+          },
+          "authgroup": "default",
+          "device-type": {
+            "cli": {
+              "ned-id": "cisco-iosxr-cli-3.5:cisco-iosxr-cli-3.5"
+            }
+          },
+          "state": {
+            "admin-state": "unlocked"
+          },
+          "config": {
+            "tailf-ned-cisco-ios-xr:interface": {
+              "GigabitEthernet": [
+                {
+                  "id": "0/0/0/0",
+                  "ipv4": {
+                    "access-group": [
+                      {
+                        "direction": "ingress"
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            "tailf-ned-cisco-ios-xr:xxyyzztop": 0
+          }
+        }
+      ]
+    }
+  }
+}
+[ok][2020-03-16 12:30:38]
+
+[edit]
+
+ run show services acl_lab
+services acl_lab ingress
+ modified devices [ iosxr0 iosxr1 ]
+ directly-modified devices [ iosxr0 iosxr1 ]
+ device-list [ iosxr0 iosxr1 ]
+[ok][2020-03-16 12:30:38]
+
+[edit]
+

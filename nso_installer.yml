@@ -1,0 +1,116 @@
+### Execution-cmd: ansible-playbook nso_installer.yml -vvv --ask-sudo-pass
+---
+- hosts: 127.0.0.1
+  gather_facts: no
+  vars:
+    PATH: /home/terralogic/
+    nso_version: 5.3
+    nso_image: nso-5.3.linux.x86_64
+    cisco_package: cisco-ios-cli-3.8
+    package_prefix: ios
+    no_of_devices: 2
+    url: http://localhost:8080/jsonrpc
+    username: admin
+    password: admin
+  tasks:
+   - name: apt-get update
+     become: yes
+     command:
+           cmd: apt-get update 
+   - name: apt-get install build-essential
+     become: yes
+     command:
+           cmd: apt-get install build-essential 
+   - name: ensure list of packages installed 
+     become: yes
+     apt: 
+        name: "{{ packages }}" 
+     vars: 
+        packages:
+        ## Add List of packages need to present
+        - ant
+        - erlang
+        - openjdk-11-jdk
+        # - java
+   - name: openssl version
+     command: openssl version
+   ####  By Default signed.bin will pick from /home/user path, if it's not present on /home/user copy from source to /home/user using below step ###
+   # - name: copy nso file to source path
+   #   copy:
+   #       src: "{{ PATH }}Downloads/{{ nso_image }}.signed.bin"
+   #       dest: "{{ PATH }}"
+   - name: untar nso-{{ nso_version }} signed bin
+     command: chdir={{ PATH }} sh {{ nso_image }}.signed.bin
+   - name: untar nso-{{ nso_version }} installer bin to nso-{{ nso_version }} directory
+     command: chdir={{ PATH }} sh {{ nso_image }}.installer.bin {{ PATH }}nso-{{ nso_version }}/
+   - name: source ncsrc, setup ncs and start ncs
+     action: shell source {{ PATH }}.bashrc && source {{ PATH }}nso-{{ nso_version }}/ncsrc && ncs-setup --dest {{ PATH }}ncs-run && cd {{ PATH }}/ncs-run && "ncs"
+     args:
+         executable: /bin/bash
+   - name: verify ncs status
+     action: shell source {{ PATH }}.bashrc && source {{ PATH }}nso-{{ nso_version }}/ncsrc && ncs --status | grep status
+     args:
+         chdir: "{{ PATH }}/ncs-run/"
+         executable: /bin/bash
+   - name: create my-project
+     action: shell source {{ PATH }}/.bashrc && source {{ PATH }}/nso-{{ nso_version }}/ncsrc && ncs-project create my-project
+     args:
+         chdir: "{{ PATH }}/ncs-run/packages/"
+         executable: /bin/bash
+   - name: update my-project
+     action: shell source {{ PATH }}/.bashrc && source {{ PATH }}/nso-{{ nso_version }}/ncsrc && ncs-project update -y
+     args:
+         chdir: "{{ PATH }}/ncs-run/packages/my-project"
+         executable: /bin/bash
+   - name: copy src ios packages to my-project packages
+     command: cp -r {{ PATH }}/nso-{{ nso_version }}/packages/neds/{{ cisco_package }}/ {{ PATH }}/ncs-run/packages/my-project/packages
+   - name: Add {{ cisco_package }} packages to project-meta-data file
+     blockinfile:
+        path: "{{ PATH }}/ncs-run/packages/my-project/project-meta-data.xml"
+        marker: "<!-- {mark} ANSIBLE MANAGED BLOCK -->"
+        insertbefore: '<description>'
+        block: |
+          <netsim>
+                  <device>
+                          <name>{{ cisco_package }}</name>
+                          <prefix>{{ package_prefix }}</prefix>
+                          <num-devices>{{ no_of_devices }}</num-devices>
+                  </device>
+          </netsim>
+
+          <package>
+                  <name>{{ cisco_package }}</name>
+                  <local/>
+          </package>
+   - name: update my-project after copying ios packages
+     action: shell source {{ PATH }}/.bashrc && source {{ PATH }}/nso-{{ nso_version }}/ncsrc && ncs-project update -y
+     args:
+         chdir: "{{ PATH }}/ncs-run/packages/my-project"
+         executable: /bin/bash
+   # - name: Wait 20 seconds after update packages
+   #   pause:
+   #       seconds: 20
+   - name: make netsim
+     shell: chdir={{ PATH }}ncs-run/packages/my-project make netsim
+   - name: ncs netsim start  
+     shell: chdir={{ PATH }}ncs-run/packages/my-project ncs-netsim start
+   - name: make clean all
+     shell: chdir={{ PATH }}ncs-run/packages/my-project make clean all
+   - name: make all start
+     shell: chdir={{ PATH }}ncs-run/packages/my-project make all start
+   - name: reload packages
+     nso_action:
+      url: "{{ url }}"
+      username: "{{ username }}"
+      password: "{{ password }}"
+      path: /ncs:packages/reload/
+      input: {}
+   - name: Show packages
+     nso_show:
+      url: "{{ url }}"
+      username: "{{ username }}"
+      password: "{{ password }}"
+      path: "/ncs:packages/package"
+      operational: true
+
+...

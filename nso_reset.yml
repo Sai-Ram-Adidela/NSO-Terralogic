@@ -1,0 +1,29 @@
+---
+- hosts: 127.0.0.1
+  gather_facts : no
+  vars:
+    url: http://localhost:8080/jsonrpc
+    username: admin
+    password: admin
+    PATH: /home/terralogic/
+    nso_version: 5.3
+    nso_image: nso-5.3.linux.x86_64
+  tasks:
+   - name: stop ncs
+     shell: chdir={{ PATH }}/ncs-run/ ncs --stop
+   - name: reset ncs setup
+     shell: chdir={{ PATH }}/ncs-run/ ncs-setup --reset
+   - name: stop netsim
+     shell: chdir={{ PATH }}/ncs-run/packages/my-project ncs-netsim stop
+   - name: delete network
+     shell: chdir={{ PATH }}/ncs-run/packages/my-project ncs-netsim delete-network
+   - name: make netsim-clean
+     shell: chdir={{ PATH }}/ncs-run/packages/my-project make netsim-clean
+   - name: remove netsim and ncs-cdb/netsim_devices_init.xml
+     shell: chdir={{ PATH }}/ncs-run/packages/my-project rm -rf netsim/ ncs-cdb/netsim_devices_init.xml
+   - name: delete ncs-run and nso-{{ nso_version }}
+     shell: chdir={{ PATH }} rm -rf ncs-run/ nso-{{ nso_version }}/
+   - name: delete nso files
+     shell: chdir={{ PATH }} rm {{ nso_image }}.installer.bin tailf.cer cisco_x509_verify_release.py {{ nso_image }}.installer.bin.signature README.signature
+
+...
